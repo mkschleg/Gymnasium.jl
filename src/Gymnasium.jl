@@ -7,22 +7,45 @@ import PythonCall: PythonCall, Py, @py, pyconvert, pybuiltins, pyimport, pyis
 pygym::Py = PythonCall.pynew() # initially NULL
 function __init__()
     PythonCall.pycopy!(pygym, pyimport("gymnasium"))
+    PythonCall.pyconvert_add_rule("gymnasium.spaces.discrete:Discrete", DiscreteSpace, convert_discrete_space)
 end
 
-mutable struct GymnasiumEnv{T}
-    pyenv::Py
-    id::String
+
+######## Spaces #########
+
+struct DiscreteSpace
+    n::Int
+    start::Int
+end
+
+function convert_discrete_space(::Type{DiscreteSpace}, pyobj::Py)
+    n = Gymnasium.pyconvert(Int, pyobj.n)
+    start = Gymnasium.pyconvert(Int, pyobj.start)
+    ds = DiscreteSpace(n, start)
+    return Gymnasium.PythonCall.pyconvert_return(ds)
+end
+
+################
+
+######## Environment ########
+
+mutable struct GymnasiumEnv{T, AS, OS}
+    const pyenv::Py
+    const id::String
+    const action_space::AS
+    const observation_space::OS
 
     observation::T
     terminal::Bool
     reward::Float64
-    
     info::Py
 end
 
 function GymnasiumEnv(id::String, pyenv::Py)
     obs, info = pyenv.reset() # reset to get the obs type
-    env = GymnasiumEnv(pyenv, id, convert_obs(obs), false, 0.0, info)
+    as = pyconvert(Any, pyenv.action_space)
+    os = pyconvert(Any, pyenv.observation_space)
+    env = GymnasiumEnv(pyenv, id, as, os, convert_obs(obs), false, 0.0, info)
     return env
 end
 
