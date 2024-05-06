@@ -30,7 +30,7 @@ end
 ######## Environment ########
 
 mutable struct GymnasiumEnv{T, AS, OS}
-    const pyenv::Py
+    pyenv::Py
     const id::String
     const action_space::AS
     const observation_space::OS
