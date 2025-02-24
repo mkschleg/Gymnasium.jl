@@ -67,14 +67,16 @@ end
 convert_obs(::Val{:ndarray}, pyobs::Py) = pyconvert(Vector, pyobs)
 
 function make(id::String;
-              unwrap=false, render_mode=nothing,
-              max_episode_steps=nothing, autoreset=false,
+              unwrap=false,
+              render_mode=nothing,
+              max_episode_steps=nothing,
+              autoreset=false,
               disable_env_checker=nothing, kwargs...)
     pyenv = pygym.make(id,
-                     render_mode=render_mode, max_episode_steps=max_episode_steps,
-                     autoreset=autoreset,
-                     disable_env_checker=disable_env_checker,
-                     kwargs...)
+                       render_mode=render_mode,
+                       max_episode_steps=max_episode_steps,
+                       disable_env_checker=disable_env_checker,
+                       kwargs...)
 
     if unwrap
         pyenv = pyenv.unwrapped
