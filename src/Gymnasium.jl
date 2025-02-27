@@ -59,12 +59,29 @@ function convert_obs(::GymnasiumEnv{T}, pyobs::Py) where T
     pyconvert(T, pyobs)
 end
 
+convert_obs(::T, pyobs::Py) where T = pyconvert(Any, pyobs)
+
+function convert_obs(::NamedTuple{N, T}, pyobs::Py) where {N, T}
+    types = T.parameters
+    NamedTuple{N}(pyconvert(types[i], pyobs[string(N[i])]) for i in 1:length(N))
+end
+
+
 function convert_obs(pyobs::Py)
     t_str = pyconvert(String, @py type(pyobs).__name__)
     convert_obs(Val(Symbol(t_str)), pyobs)
 end
 
-convert_obs(::Val{:ndarray}, pyobs::Py) = pyconvert(Vector, pyobs)
+convert_obs(::Val{:ndarray}, pyobs::Py) = pyconvert(Array, pyobs)
+
+function convert_obs(::Val{:dict}, pyobs::Py)
+    d = Dict{String, Any}()
+    for key in pyobs.keys()
+        d[string(key)] = convert_obs(pyobs[key])
+    end
+    (; zip(Symbol.(keys(d)), values(d))...)
+end
+
 
 function make(id::String;
               unwrap=false,
