@@ -1,7 +1,7 @@
+__precompile__(false)
 module Gymnasium
 
 # Write your package code here.
-
 import PythonCall: PythonCall, Py, @py, pyconvert, pybuiltins, pyimport, pyis
 
 pygym::Py = PythonCall.pynew() # initially NULL
