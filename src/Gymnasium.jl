@@ -1,4 +1,3 @@
-__precompile__(false)
 module Gymnasium
 
 # Write your package code here.
