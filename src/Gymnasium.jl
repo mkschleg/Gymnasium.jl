@@ -124,7 +124,7 @@ function reset!(env::GymnasiumEnv{T}; seed::Union{Nothing, Int}=nothing, options
         throw("GymnasiumEnv: pyenv None in reset!")
     end
     obs, info = env.pyenv.reset(seed=seed, options=options)
-
+    return convert_obs(env, obs), info
 end
 
 function render(env::GymnasiumEnv)
