@@ -34,17 +34,14 @@ mutable struct GymnasiumEnv{T, AS, OS}
     const action_space::AS
     const observation_space::OS
 
-    observation::T
-    terminal::Bool
-    reward::Float64
-    info::Py
+    _ex_obs::T
 end
 
 function GymnasiumEnv(id::String, pyenv::Py)
     obs, info = pyenv.reset() # reset to get the obs type
     as = pyconvert(Any, pyenv.action_space)
     os = pyconvert(Any, pyenv.observation_space)
-    env = GymnasiumEnv(pyenv, id, as, os, convert_obs(obs), false, 0.0, info)
+    env = GymnasiumEnv(pyenv, id, as, os, convert_obs(obs))
     return env
 end
 
@@ -112,13 +109,13 @@ function step!(env::GymnasiumEnv, action)
         throw("GymnasiumEnv: pyenv None in step!")
     end
     
-    obs, rew, terminal, info = env.pyenv.step(action)
-    env.info = info
-    env.observation = convert_obs(env, obs)
-    env.terminal = pyconvert(Bool, terminal)
-    env.reward = pyconvert(Float64, rew)
+    observation, reward, terminal, truncated, info = env.pyenv.step(action)
+    obs = convert_obs(env, observation)
+    term = pyconvert(Bool, terminal)
+    rew = pyconvert(Float64, reward)
+    trun = pyconvert(Bool, truncated)
 
-    env.observation, env.reward, env.terminal, env.info
+    obs, rew, term, trun, info
 end
 
 function reset!(env::GymnasiumEnv{T}; seed::Union{Nothing, Int}=nothing, options::Union{Nothing, Dict}=nothing) where {T}
@@ -127,9 +124,6 @@ function reset!(env::GymnasiumEnv{T}; seed::Union{Nothing, Int}=nothing, options
         throw("GymnasiumEnv: pyenv None in reset!")
     end
     obs, info = env.pyenv.reset(seed=seed, options=options)
-    env.observation = pyconvert(T, obs)
-    env.info = info
-    env.observation, info
 
 end
 
